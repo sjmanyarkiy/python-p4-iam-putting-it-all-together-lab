@@ -10,27 +10,24 @@ from models import User, Recipe
 class Signup(Resource):
     def post(self):
         data = request.get_json()
-
         try:
             user = User(
-                username = data.get['username'],
-                image_url = data.get['image_url'],
-                bio = data.get['bio']
+                username=data['username'],
+                image_url=data.get('image_url'),
+                bio=data.get('bio')
             )
             user.password_hash = data['password']
-
             db.session.add(user)
             db.session.commit()
-
             session['user_id'] = user.id
-
             return user.to_dict(), 201
-        
-        except IntegrityError:
+        except IntegrityError as e:
             db.session.rollback()
+            print(f"INTEGRITY ERROR: {e}")
             return {'errors': ['Username already taken']}, 422
         except Exception as e:
             db.session.rollback()
+            print(f"GENERAL ERROR: {type(e).__name__}: {e}")
             return {'errors': [str(e)]}, 422
 
 
